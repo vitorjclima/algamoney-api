@@ -1,11 +1,13 @@
 package com.example.algamoneyapi.resource;
 
-import java.util.List;
+import java.net.URI;
+
+import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import com.example.algamoneyapi.model.Categoria;
 import com.example.algamoneyapi.repository.CategoriaRepository;
@@ -24,8 +26,35 @@ public class CategoriaResource {
     private CategoriaRepository categoriaRepository;
 
     @GetMapping
-    public List<Categoria> listar(){
-        return categoriaRepository.findAll();
+    public ResponseEntity<?> listar(HttpServletResponse response){
+
+        URI uri = ServletUriComponentsBuilder.fromCurrentRequestUri().build().toUri();
+        response.setHeader("Location", uri.toASCIIString());
+
+        return ResponseEntity.ok(categoriaRepository.findAll());
+
+    }
+
+    @PostMapping
+    public ResponseEntity<Categoria> criar(@RequestBody Categoria categoria, HttpServletResponse response) {
+        Categoria categoriaSalva = categoriaRepository.save(categoria);
+
+        URI uri = ServletUriComponentsBuilder.fromCurrentRequestUri().path("/{codigo}").
+                buildAndExpand(categoriaSalva.getCodigo()).toUri();
+
+        return ResponseEntity.created(uri).body(categoriaSalva);
+    }
+
+    @GetMapping("/{codigo}")
+    public ResponseEntity<?> buscarPeloCodigo(@PathVariable Long codigo, HttpServletResponse response){
+        Categoria categoria = categoriaRepository.findOne(codigo);
+
+        URI uri = ServletUriComponentsBuilder.fromCurrentRequestUri().build().toUri();
+
+        response.setHeader("Location", uri.toASCIIString());
+
+        return categoria==null ? ResponseEntity.notFound().build() :
+            ResponseEntity.ok(categoria);
     }
 
 }
