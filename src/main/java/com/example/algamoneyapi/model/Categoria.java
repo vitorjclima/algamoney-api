@@ -1,6 +1,8 @@
 package com.example.algamoneyapi.model;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 
 /**
  * @author vitor
@@ -15,6 +17,8 @@ public class Categoria {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long codigo;
 
+    @NotNull
+    @Size(min=3, max=20)
     private String nome;
 
     /**
