@@ -2,7 +2,6 @@ package com.example.algamoneyapi.resource;
 
 import static com.jayway.restassured.RestAssured.baseURI;
 import static com.jayway.restassured.RestAssured.get;
-import static org.hamcrest.Matchers.containsString;
 
 import org.junit.jupiter.api.Test;
 
@@ -20,13 +19,11 @@ class CategoriaResourceTest {
     }
 
     @Test
-    void test() {
+    void testListar() {
         get("/categoria").
         then().
         statusCode(200).
         and().
-        contentType(ContentType.JSON).
-        and().
-        body(containsString("Farmacia"));
+        contentType(ContentType.JSON);
     }
 }
