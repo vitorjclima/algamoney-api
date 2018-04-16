@@ -1,15 +1,16 @@
 package com.example.algamoneyapi.resource;
 
-import java.net.URI;
-
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import com.example.algamoneyapi.event.CreatedResourceEvent;
+import com.example.algamoneyapi.model.Categoria;
 import com.example.algamoneyapi.model.Pessoa;
 import com.example.algamoneyapi.repository.PessoaRepository;
 
@@ -25,24 +26,35 @@ public class PessoaResource {
     @Autowired
     private PessoaRepository pessoaRepository;
 
+    @Autowired
+    private ApplicationEventPublisher publisher;
+
     @GetMapping
     public ResponseEntity<?> listar(HttpServletResponse response) {
+        return ResponseEntity.status(HttpStatus.OK).
+                body(pessoaRepository.findAll());
+    }
 
-        URI uri = ServletUriComponentsBuilder.fromCurrentRequestUri().build().toUri();
-        response.setHeader("Location", uri.toASCIIString());
-
-        return ResponseEntity.ok(pessoaRepository.findAll());
-
+    @GetMapping("/{codigo}")
+    public ResponseEntity<?> buscarPeloCodigo(@PathVariable Long codigo, HttpServletResponse response) {
+        Pessoa pessoa = pessoaRepository.findOne(codigo);
+        return pessoa == null ? ResponseEntity.notFound().build()
+                : ResponseEntity.status(HttpStatus.OK).body(pessoa);
     }
 
     @PostMapping
     public ResponseEntity<Pessoa> criar(@RequestBody @Valid Pessoa pessoa, HttpServletResponse response) {
         Pessoa pessoaSalva = pessoaRepository.save(pessoa);
+        publisher.publishEvent(new CreatedResourceEvent(this, response, pessoaSalva.getCodigo()));
+        return ResponseEntity.status(HttpStatus.CREATED).body(pessoaSalva);
+    }
 
-        URI uri = ServletUriComponentsBuilder.fromCurrentRequestUri().path("/{codigo}")
-                .buildAndExpand(pessoaSalva.getCodigo()).toUri();
+    @DeleteMapping("/{codigo}")
+    public ResponseEntity<Pessoa> remover(@PathVariable Long codigo, HttpServletResponse response){
+        pessoaRepository.delete(codigo);
+        publisher.publishEvent(new CreatedResourceEvent(this, response, codigo));
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
 
-        return ResponseEntity.created(uri).body(pessoaSalva);
     }
 
 }
