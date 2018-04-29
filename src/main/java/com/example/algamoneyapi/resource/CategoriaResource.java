@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.*;
 
 import com.example.algamoneyapi.event.CreatedResourceEvent;
 import com.example.algamoneyapi.model.Categoria;
-import com.example.algamoneyapi.model.Pessoa;
 import com.example.algamoneyapi.repository.CategoriaRepository;
 import com.example.algamoneyapi.service.CategoriaService;
 
