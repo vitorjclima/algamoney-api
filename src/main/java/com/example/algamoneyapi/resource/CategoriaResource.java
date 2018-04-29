@@ -13,6 +13,7 @@ import com.example.algamoneyapi.event.CreatedResourceEvent;
 import com.example.algamoneyapi.model.Categoria;
 import com.example.algamoneyapi.model.Pessoa;
 import com.example.algamoneyapi.repository.CategoriaRepository;
+import com.example.algamoneyapi.service.CategoriaService;
 
 /**
  *
@@ -26,6 +27,9 @@ public class CategoriaResource {
 
     @Autowired
     private CategoriaRepository categoriaRepository;
+
+    @Autowired
+    private CategoriaService categoriaService;
 
     @Autowired
     private ApplicationEventPublisher publisher;
@@ -51,10 +55,15 @@ public class CategoriaResource {
     }
 
     @DeleteMapping("/{codigo}")
-    public ResponseEntity<Pessoa> remover(@PathVariable Long codigo, HttpServletResponse response){
+    public ResponseEntity<Categoria> remover(@PathVariable Long codigo, HttpServletResponse response){
         categoriaRepository.delete(codigo);
         publisher.publishEvent(new CreatedResourceEvent(this, response, codigo));
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
 
+    @PutMapping("/{codigo}")
+    public ResponseEntity<Categoria> atualizar(@PathVariable Long codigo, @RequestBody @Valid Categoria categoria){
+        Categoria categoriaSalva = categoriaService.atualizar(codigo, categoria);
+        return ResponseEntity.ok(categoriaSalva);
     }
 }
